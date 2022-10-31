@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserDAO">
+	<resultMap type="com.cozy.www.user.UserVO" id="UserVO">
+		<id property="uid" column="UID"/>
+		<result property="upwd" column="UPWD"/>
+		<result property="uname" column="UNAME"/>
+		<result property="uphone" column="UPHONE"/>
+		<result property="umail" column="UMAIL"/>
+		<result property="postcode" column="POSTCODE"/>
+		<result property="roadaddr" column="ROADADDR"/>
+		<result property="jibunaddr" column="JIBUNADDR"/>
+		<result property="detailaddr" column="DETAILADDR"/>
+		<result property="extraaddr" column="EXTRAADDR"/>
+		<result property="udate" column="UDATE"/>
+	</resultMap>
+	
+	<select id="replyList" resultType="com.cozy.www.user.UserVO" parameterType="com.cozy.www.user.Paging">
+     SELECT * FROM USER
+      <where>
+    	 <if test="ch1=='uid'.toString()">
+			 UID LIKE concat('%',#{ch2},'%' ) AND uid != 'admin'
+		 </if>
+         <if test="ch1=='uname'.toString()">
+             UNAME LIKE concat('%',#{ch2},'%' ) AND uid != 'admin'
+         </if>
+         <if test="ch1=='roadaddr'.toString()">
+             ROADADDR LIKE concat('%',#{ch2},'%' ) AND uid != 'admin'
+         </if>
+      </where>
+     ORDER BY UDATE DESC LIMIT #{limit} offset #{offset}
+    </select>
+    
+    <select id="getListCount" resultType="Integer">
+     SELECT COUNT(*) FROM USER
+    </select>
+   
+    <select id="getSearchCount" resultType="Integer" parameterType="com.cozy.www.user.UserVO" >
+     SELECT COUNT(*) FROM USER
+       <where>
+       	 <if test="ch1=='uid'">
+			 UID LIKE concat('%',#{ch2},'%' )
+		 </if>
+         <if test="ch1=='uname'">
+             UNAME LIKE concat('%',#{ch2},'%' )
+         </if>
+         <if test="ch1=='roadaddr'">
+             ROADADDR LIKE concat('%',#{ch2},'%' )
+         </if>
+   	   </where>
+   
+    </select>
+	
+	<select id="idChk" resultType="Integer">
+	SELECT COUNT(*) FROM USER
+	WHERE UID = #{uid}
+	</select>
+	
+	<insert id="insert" parameterType="com.cozy.www.user.UserVO">
+		INSERT INTO USER (uid, upwd, uname, uphone, umail, postcode, roadaddr, jibunaddr, detailaddr, extraaddr)
+		VALUES ( #{uid}, #{upwd}, #{uname}, #{uphone}, concat(#{umail},#{umail2}), #{postcode}, #{roadaddr}, #{jibunaddr}, #{detailaddr}, #{extraaddr} )
+	</insert>
+	
+	 <select id="login" resultType="integer">
+        SELECT COUNT(*)
+          FROM USER
+         WHERE UID = #{uid}
+           AND UPWD = #{upwd}
+    </select>
+    
+    <select id="myInfo" resultType="hashmap">
+        SELECT * FROM USER WHERE UID = #{uid}
+    </select>
+    
+    <!-- 장바구니 목록 -->
+	<select id="getCartList" resultType="com.cozy.www.cart.CartVO">
+		SELECT * FROM CART WHERE UID = #{uid}
+		ORDER BY CART_NUM DESC
+	</select>
+    
+    <update id="update" parameterType="com.cozy.www.user.UserVO">
+	UPDATE USER SET UID=#{uid}, UNAME=#{uname}, UPWD=#{upwd}, UPHONE=#{uphone}, POSTCODE=#{postcode}, ROADADDR=#{roadaddr}, JIBUNADDR=#{jibunaddr}, DETAILADDR=#{detailaddr}, EXTRAADDR=#{extraaddr} WHERE UID = #{uid}
+	</update>
+	
+	<select id="adupdateForm" resultType="com.cozy.www.user.UserVO">
+        SELECT * FROM USER WHERE UID = #{uid}
+    </select>
+	
+	 <update id="adupdate" parameterType="com.cozy.www.user.UserVO">
+	UPDATE USER SET UID=#{uid}, UNAME=#{uname}, UPWD=#{upwd}, UPHONE=#{uphone}, POSTCODE=#{postcode}, ROADADDR=#{roadaddr}, JIBUNADDR=#{jibunaddr}, DETAILADDR=#{detailaddr}, EXTRAADDR=#{extraaddr} WHERE UID = #{uid}
+	</update>
+	
+	<delete id="aduserDelete" parameterType="com.cozy.www.user.UserVO">
+		DELETE FROM USER WHERE UID = #{uid}
+	</delete>
+	
+	<select id="userPwd" resultType="integer">
+        SELECT COUNT(*) FROM USER WHERE UID = #{uid} and UPWD = #{upwd}
+    </select>
+    
+    <select id="userDeleteForm" resultType="com.cozy.www.user.UserVO">
+    	SELECT * FROM USER WHERE UID = #{uid}
+    </select>
+    
+    <delete id="userDelete" parameterType="com.cozy.www.user.UserVO">
+		DELETE FROM USER WHERE UID = #{uid} AND (SELECT COUNT(*) FROM PAY WHERE UID = #{uid} AND STATE = 1 OR STATE = 2) = 0 
+	</delete>
+	
+	<select id="selectYear" resultType="integer" parameterType="com.cozy.www.user.UserVO">
+		SELECT IFNULL(SUM(total),0) FROM PAY WHERE PAY_DATE LIKE concat('%', #{year}, #{month} ,'%')
+	</select>
+	
+	<select id="findpwd" resultType="integer">
+        SELECT COUNT(*)
+          FROM USER
+         WHERE UID = #{uid}
+           AND UNAME = #{uname}
+           AND UMAIL = #{umail}
+    </select>
+    
+    <update id="pwdUpdate" parameterType="com.cozy.www.user.UserVO">
+	UPDATE USER SET UPWD=#{upwd} WHERE UID = #{uid}
+	</update>
+	
+	<select id="findid" resultType="String">
+	SELECT UID FROM USER
+	WHERE UNAME = #{uname} AND UMAIL = #{umail}
+	</select>
+	
+	   <select id="selectCategory" resultType="integer" parameterType="com.cozy.www.user.UserVO">
+     select ifnull(sum(qty),0) from pay
+      <where>
+       <if test="ctg=='feed'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='cat')
+       </if>
+       <if test="ctg=='snack'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='cat')
+       </if>
+       <if test="ctg=='healthy'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='cat')
+       </if>
+       <if test="ctg=='living'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='cat')
+       </if>
+       <if test="ctg=='clean'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='cat')
+       </if>
+      </where>
+      
+   </select>
+   
+      <select id="dogCategory" resultType="integer" parameterType="com.cozy.www.user.UserVO">
+     select ifnull(sum(qty),0) from pay
+      <where>
+       <if test="ctg=='feed'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='dog')
+       </if>
+       <if test="ctg=='snack'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='dog')
+       </if>
+       <if test="ctg=='healthy'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='dog')
+       </if>
+       <if test="ctg=='living'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='dog')
+       </if>
+       <if test="ctg=='clean'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2='dog')
+       </if>
+       
+      </where>
+      
+   </select>
+   
+      <select id="otherCategory" resultType="integer" parameterType="com.cozy.www.user.UserVO">
+     select ifnull(sum(qty),0) from pay
+      <where>
+       <if test="ctg=='feed'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2!='dog' and div2!='cat')
+       </if>
+       <if test="ctg=='snack'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2!='dog' and div2!='cat')
+       </if>
+       <if test="ctg=='healthy'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2!='dog' and div2!='cat')
+       </if>
+       <if test="ctg=='living'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2!='dog' and div2!='cat')
+       </if>
+       <if test="ctg=='clean'.toString()">         
+           PAY_DATE LIKE concat('%',#{year}, #{month} ,'%') AND no in (select no from product WHERE div1=#{ctg} and div2!='dog' and div2!='cat')
+       </if>
+      </where>
+      
+   </select>
+   
+   <select id="joinToday" resultType="integer">
+   SELECT  count(*) FROM  user WHERE  DATE_FORMAT(udate , '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d')   
+   </select>
+   
+   <select id="totalToday" resultType="integer">
+   SELECT ifnull(SUM(total),0) FROM PAY WHERE DATE_FORMAT(pay_date , '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d')   
+   </select>
+   
+   <select id="orderCount" resultType="integer">
+      select count(*) from
+   (select count(*) from pay where DATE_FORMAT(pay_date , '%Y-%m-%d') = DATE_FORMAT(now(), '%Y-%m-%d') group by MERCHANT_UID) as count
+   </select>
+   
+   <select id="productCount" resultType="integer">
+   select count(*) from product where DATE_FORMAT(date , '%Y-%m-%d') = DATE_FORMAT(now(), '%Y-%m-%d')
+   </select>
+	
+	
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="JJimDAO">
+	<resultMap type="com.cozy.www.jjim.JJimVO" id="JJimResult">
+		<id property="jjim_no" column="JJIM_NO" />
+		<result property="jjim" column="JJIM" />
+		<result property="no" column="NO" />
+		<result property="uid" column="UID" />
+	</resultMap>
+	
+	<!-- 찜 목록 -->
+	<select id="jjimList" resultMap="JJimResult">
+		SELECT * FROM JJIM WHERE UID = #{uid}
+		ORDER BY JJIM_NO DESC
+	</select>
+	
+	<!-- 찜 중복체크 -->
+	<select id="searchJJim" resultType="int">
+		SELECT COUNT(*) FROM JJIM WHERE NO = #{no} AND UID = #{uid}
+	</select>
+	
+	
+	<!-- 찜 하기 -->
+	<insert id="insertJJim">
+		INSERT INTO JJIM (uid, jjim, no, p_name, price, p_file)
+		(select #{uid}, 1 , no, p_name, price, p_file from product where no = ${no});
+	</insert>
+	
+		<!-- 찜 하기 -->
+	<insert id="insertListJJim">
+		INSERT INTO JJIM (uid, jjim, no, p_name, price, p_file)
+		(select #{uid}, 1 , no, p_name, price, p_file from product where no = ${no});
+	</insert>
+	
+	<!-- 찜 목록에서 삭제 -->
+	<delete id="deleteJJim">
+		DELETE FROM JJIM WHERE JJIM_NO = #{jjim_no}
+	</delete>
+	
+	<!-- 찜 해제 -->
+	<delete id="noJJim">
+		DELETE FROM JJIM WHERE JJIM = 1 AND NO = #{no}
+	</delete>
+<!-- 상품번호로 바뀔 예정 -->
+	
+</mapper>

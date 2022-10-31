@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+encoding//src/main/java/com/cozy/www/interceptor/Interceptor.java=UTF-8
+encoding//src/main/java/com/cozy/www/pay/PaymentCheck.java=UTF-8
+encoding//src/main/java/com/cozy/www/user/UserController.java=UTF-8
+encoding//src/main/webapp/WEB-INF/views/user/home.jsp=UTF-8

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CartDAO">
+	<resultMap type="com.cozy.www.cart.CartVO" id="CartResult">
+		<id property="cart_num" column="CART_NUM" />
+		<result property="uid" column="UID" />
+		<result property="p_name" column="P_NAME" />
+		<result property="price" column="PRICE" />
+		<result property="qty" column="QTY" />
+		<result property="p_file" column="P_FILE" />
+		<result property="cart_date" column="CART_DATE" />
+	</resultMap>
+	
+	<!-- 장바구니 목록 -->
+	<select id="getCartList" resultMap="CartResult">
+		SELECT * FROM CART WHERE UID = #{uid}
+		ORDER BY CART_NUM DESC
+	</select>
+	
+	
+	<!-- 장바구니 중복체크 -->
+	<select id="searchCart" resultType="Integer">
+		SELECT COUNT(*) FROM CART WHERE NO = #{no} AND UID = #{uid}
+	</select>
+	
+	
+	<!-- 장바구니 담기 -->
+	<insert id="insertCart">
+		INSERT INTO CART (uid, no, p_name, price, qty, p_file)
+		(select #{uid}, no, p_name, price, #{qty}, thumbfile from product where no = ${no});
+	</insert>
+	
+	<!-- 장바구니 삭제 -->
+	<delete id="deleteCart">
+		DELETE FROM CART WHERE CART_NUM = #{cart_num}
+	</delete>
+	
+	<!-- 장바구니 전체 삭제 -->
+	<delete id="deleteAllCart">
+		DELETE FROM CART WHERE UID = #{uid}
+	</delete>
+
+	<!-- 장바구니 수정 -->
+	<update id="updateCart">
+		UPDATE CART SET QTY=#{qty} WHERE CART_NUM=#{cart_num}
+	</update>
+	
+	<!-- 장바구니 중복상품 수량 업데이트 -->
+	<update id="modifyCart">
+		UPDATE CART SET QTY = QTY + #{qty}
+		WHERE UID = #{uid}
+		AND NO = #{no}
+	</update>
+
+	
+</mapper>
